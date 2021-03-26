@@ -3,9 +3,13 @@ function path = mdp_astar(A,B,MDP)
 % get start and end coordinates
 if length(A)==1
     aidx = u_coordswitch(A,MDP);
+else
+    aidx = A;
 end
 if length(B)==1
     bidx = u_coordswitch(B,MDP);
+else
+    bidx = B;
 end
 
 % create binary map (excluding starting state)

@@ -34,6 +34,7 @@ dyn.predatorSpeed    = 11;      % how fast the predator can move (in moves per s
 dyn.agentSpeed       = 9;       % how fast the agent can move (in moves per second)
 dyn.predatorFunction = 'astar'; % 'astar' or 'softmax'
 dyn.frameRate        = 60;   
+dyn.lookahead        = 1;       % how many moves ahead to anticipate the predator
 
 %% Initiate MDP
 

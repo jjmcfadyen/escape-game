@@ -7,8 +7,9 @@ agent = controller(MDP,'agent','initiate');
 predator = controller(MDP,'predator','initiate');
 
 % Update dynamic variables
-agent.speed    = dyn.agentSpeed;
-predator.speed = dyn.predatorSpeed;
+agent.speed     = dyn.agentSpeed;
+predator.speed  = dyn.predatorSpeed;
+agent.lookahead = dyn.lookahead;
 
 % Determine max number of frames for this trial
 frames = dyn.timeLimit*dyn.frameRate;
@@ -39,10 +40,10 @@ while f <= frames
     end
     
     % evaluate agent's environment
-    if isempty(agent.moving)
+%     if isempty(agent.moving)
         agent = controller(agent,'agent','evaluate');
-    end
-    if isempty(predator.moving)
+%     end
+%     if isempty(predator.moving)
         if agent.hiding
             predator.plan = predator.plan(find(predator.plan==predator.start):end,:);
             if predator.plan(end) == predator.start
@@ -51,7 +52,7 @@ while f <= frames
         else
             predator = controller(predator,'predator','evaluate');
         end
-    end
+%     end
     
     % set movement
     if isempty(agent.moving) % if the agent has no trajectory...
