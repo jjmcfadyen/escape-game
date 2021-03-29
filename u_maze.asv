@@ -341,30 +341,6 @@ if generateMap
 
     MDP.punishment(1) = nearnodes(randi(length(nearnodes)));
     
-    % plot
-    binmaze = ~isnan(MDP.map);
-
-    figure;
-    imagesc(binmaze); hold on
-    colormap('gray')
-
-    set(gca,'ydir','reverse')
-
-    A = u_coordswitch(MDP.start,MDP);
-    B = u_coordswitch(MDP.terminal,MDP);
-    scatter(A(2),A(1),80,'markerfacecolor','b','markeredgecolor','k'); hold on
-    scatter(B(2),B(1),80,'markerfacecolor','g','markeredgecolor','k'); hold on
-
-    [I,J] = find(MDP.map == MDP.punishment(1)); 
-    scatter(J,I,80,'markerfacecolor','r','markeredgecolor','k')
-
-    if isfield(MDP,'safety')
-        for s = 1:length(MDP.safety.loc_safe)
-            [I,J] = find(MDP.map == MDP.safety.loc_safe(s)); 
-            scatter(J,I,80,'markerfacecolor','y','markeredgecolor','k'); hold on
-        end
-    end
-    
 else
     
     %% Manual map definition
@@ -500,8 +476,14 @@ else
     end
     
     % number the non-nan states
-    MDP.map = reshape(1:numel(maze),size(maze,1),size(maze,2))';;
-    MDP.map(isnan(maze)) = NaN;
+    MDP.map = maze;
+    for i = 2:size(maze,1)-1
+        for j = 2:size(maze,2)-1
+            if ~isnan(maze(i,j))
+                MDP.map(i,j) = max(MDP.map(:))+1;
+            end
+        end
+    end
     
     % update dimensions
     MDP.dim = size(MDP.map);
@@ -510,13 +492,12 @@ else
     % update feature locations
     MDP.start = u_coordswitch(MDP.start,MDP);
     MDP.punishment = u_coordswitch(MDP.punishment,MDP);
+    MDP.terminal = [MDP.start MDP.punishment];
     
     for i = 1:size(MDP.reward,1)
         MDP.reward(i,1) = u_coordswitch(MDP.reward(i,:),MDP);
     end
     MDP.reward = MDP.reward(:,1);
-    
-    MDP.terminal = [MDP.punishment MDP.reward(end)]; % only the last reward is the terminal
     
     if MDP.safety.on
         for i = 1:size(MDP.safety.loc_safe,1)
@@ -528,6 +509,30 @@ else
     % recompute adjacency matrix
     MDP = u_adjacency(MDP);
     
+end
+
+% plot
+binmaze = ~isnan(MDP.map);
+
+figure;
+imagesc(binmaze); hold on
+colormap('gray')
+
+set(gca,'ydir','reverse')
+
+A = u_coordswitch(MDP.start,MDP);
+B = u_coordswitch(MDP.terminal,MDP);
+scatter(A(2),A(1),80,'markerfacecolor','b','markeredgecolor','k'); hold on
+scatter(B(2),B(1),80,'markerfacecolor','g','markeredgecolor','k'); hold on
+
+[I,J] = find(MDP.map == MDP.punishment(1)); 
+scatter(J,I,80,'markerfacecolor','r','markeredgecolor','k')
+
+if isfield(MDP,'safety')
+    for s = 1:length(MDP.safety.loc_safe)
+        [I,J] = find(MDP.map == MDP.safety.loc_safe(s)); 
+        scatter(J,I,80,'markerfacecolor','y','markeredgecolor','k'); hold on
+    end
 end
 
 end

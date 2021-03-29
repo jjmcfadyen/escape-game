@@ -16,25 +16,28 @@ tol         = 1e-4;
 max_iter    = 100;
 
 % Visibility setting
-cone        = 3;    % how many squares ahead the agent can see the predator (Inf to see everything)
+cone        = 3;    % how many squares ahead the agent can see
+
+% Reward settings
+rval                = 10;      
 
 % Safety settings
 safety              = [];
 safety.on           = true;      % whether safe locations are available or not
 safety.sdensity     = .05;       % proportion of the environment with safe locations (0 to 1)
-safety.sval         = 0;      % perceived value of safety zone
-safety.alpha        = 0.5;       % learning rate for safety cues
+safety.sval         = 0;         % perceived value of safety zone
 safety.found        = [];        % log of safety locations found
 safety.method       = 'merged';  % how safety locations are dealt with ('merged')
 
 % Dynamic settings 
+dyn                  = [];
 dyn.on               = true;    % enables you to produce a score (escape or death)
 dyn.timeLimit        = 60;      % how long the agent has to escape
 dyn.predatorSpeed    = 11;      % how fast the predator can move (in moves per second)
 dyn.agentSpeed       = 9;       % how fast the agent can move (in moves per second)
 dyn.predatorFunction = 'astar'; % 'astar' or 'softmax'
-dyn.frameRate        = 60;   
-dyn.lookahead        = 1;       % how many moves ahead to anticipate the predator
+dyn.frameRate        = 60;      % update rate of movement
+dyn.lookahead        = true;    % does the agent imagine deaths along future policies, given predator speed?
 
 %% Initiate MDP
 
@@ -45,11 +48,11 @@ MDP.dim         = size(gridworld);
 MDP.map         = reshape(1:MDP.nStates,MDP.dim(1),MDP.dim(2))';
 MDP.safety      = safety;
 
-MDP = u_maze(MDP,'all'); % 'all' or 'predator'
+MDP = u_maze(MDP,'interactive'); % 'auto' or 'interactive'
 
-MDP.reward = [MDP.terminal 10];       % set value of terminal reward state
-MDP.punishment(2) = -10;              % set value of terminal predator state
-MDP.terminal(2) = MDP.punishment(1);  % add terminal state as predator state
+MDP.reward          = [MDP.reward, repmat(10,length(MDP.reward),1)];       % set value of terminal reward state
+MDP.punishment(2)   = -10;              % set value of terminal predator state
+MDP.terminal        = [MDP.reward(end,1) MDP.punishment(1)];  % add terminal state as predator state
 
 % Log other settings
 MDP.epsilon     = epsilon;

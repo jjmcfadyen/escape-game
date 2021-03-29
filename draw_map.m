@@ -28,8 +28,10 @@ if isfield(MDP,'V')
 %     end
     
     if isfield(MDP,'reward')
-        [I,J] = find(MDP.map == MDP.reward(1));
-        V(I,J) = MDP.reward(2);
+        for i = 1:size(MDP.reward,1)
+            [I,J] = find(MDP.map == MDP.reward(i,1));
+            V(I,J) = MDP.reward(i,2);
+        end
     end
     
     if isfield(MDP,'punishment')

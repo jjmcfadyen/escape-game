@@ -23,7 +23,7 @@ f = 0;
 while f <= frames
    
     f = f + 1;
-
+    
     % swap information between agent & predator
     predator.agent_hiding = agent.hiding;
     predator.agent(1)     = agent.start;
@@ -41,6 +41,9 @@ while f <= frames
     
     % evaluate agent's environment
     agent = controller(agent,'agent','evaluate');
+    if f == 1
+        V = agent.V;
+    end
     if agent.hiding
         predator.plan = predator.plan(find(predator.plan==predator.start):end,:);
         if predator.plan(end) == predator.start

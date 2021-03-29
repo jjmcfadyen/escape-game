@@ -8,7 +8,7 @@ MDP = u_adjacency(MDP);
 
 MDP.R = zeros(MDP.nStates,MDP.nStates);
 
-if MDP.safety.on && ~isempty(MDP.safety.found)
+if MDP.safety.on
     switch MDP.safety.method
         case 'merged'
             for i = 1:length(MDP.safety.found)
@@ -19,7 +19,9 @@ if MDP.safety.on && ~isempty(MDP.safety.found)
 end
 
 if isfield(MDP,'reward')
-    MDP.R(:,MDP.reward(1)) = MDP.reward(2);
+    for i = 1:size(MDP.reward,1)
+        MDP.R(:,MDP.reward(i,1)) = MDP.reward(i,2);
+    end
 end
 if isfield(MDP,'punishment')
     MDP.R(:,MDP.punishment(1)) = MDP.punishment(2);

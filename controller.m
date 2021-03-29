@@ -1,5 +1,7 @@
 function Y = controller(X,type,job)
 
+MDP = X;
+
 switch job
     
     case 'initiate'
@@ -54,8 +56,6 @@ switch job
         switch type
             case 'agent'
                 
-                X.plan = [];
-                
                 % Check what can currently be seen
                 if X.cone ~= Inf
                     [~,labels]  = u_viscone(X.start,X);
@@ -67,29 +67,18 @@ switch job
                 % Can the predator be seen?
                 if any(X.cansee == X.predator(1)) % yes
                     X.punishment = X.predator;
-                    if X.lookahead > 0
-                        predator_path = mdp_astar(X.predator(1),round(X.position),X);
-                        if X.lookahead < length(predator_path)
-                            X.punishment(1) = predator_path(X.lookahead);
-                        end
-                    end
                     X.terminal      = [X.reward(1) X.punishment(1)];
                 elseif isfield(X,'punishment') % no
+                    X.terminal      = setdiff(X.terminal,X.punishment(:,1));
                     X               = rmfield(X,'punishment');
-                    X.terminal      = X.reward(1);
                 end
                 
-                % Can any safe locations be seen?
-                if X.safety.on
-                    found = labels(ismember(labels,X.safety.loc_safe));
-                    if ~isempty(found)
-                        X.safety.found = unique([X.safety.found found]);
-                    end
-                end
-                
-                % Update entire value map
+                % Update entire value map (but only if different from before)
                 X = mdp_build(X);
-                X = mdp_valueIteration(X,false);
+                
+                if u_valdiff(X,MDP)
+                    X = mdp_valueIteration(X,false);
+                end
                 
                 % Check if hiding
                 if X.safety.on
@@ -98,7 +87,7 @@ switch job
                     else
                         nextmove = X.plan(1);
                     end
-                    if X.start == nextmove && any(X.start == X.safety.found)
+                    if X.start == nextmove && any(X.start == X.loc_safe)
                         X.hiding = true;
                     end
                 end
