@@ -1,4 +1,4 @@
-function [path,randomness] = mdp_astar(A,B,MDP)
+function path = mdp_astar(A,B,MDP)
 
 % get start and end coordinates
 if length(A)==1
@@ -42,7 +42,6 @@ parents = nan(size(map,1),size(map,2));
 position = aidx;
 closed = nan(0,2);
 % figure
-randomness = false;
 while true
     
     % open up the surrounding states
@@ -139,8 +138,6 @@ while true
         cnode = min_h;
     else
         cnode = min_f(randi(size(min_f,1)),:);
-        warning('There might be two shortest paths')
-        randomness = true;
     end
     
     % close it

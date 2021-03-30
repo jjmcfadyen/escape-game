@@ -7,7 +7,7 @@ clc
 gridworld   = zeros(5,5);
 
 % Successor representations
-epsilon     = 0;             % the transition uncertainty between states (max is 0.5; anything higher, they will do the OPPOSITE of what is likely)
+Mepsilon     = 0;             % the transition uncertainty between states (max is 0.5; anything higher, they will do the OPPOSITE of what is likely)
 policy      = 'pessimism';   % policy        (pessimism, softmax, min, max, mean)
 gamma       = 0.98;          % gamma         (temporal discounting factor)
 beta        = 5;             % beta          (inverse temperature - softmax only)
@@ -19,7 +19,9 @@ max_iter    = 100;
 cone        = 3;    % how many squares ahead the agent can see
 
 % Reward settings
-rval                = 10;      
+reward              = [];
+reward.val          = 10;   
+reward.num          = 2;         % how many switches ( + exit)
 
 % Safety settings
 safety              = [];
@@ -33,8 +35,8 @@ safety.method       = 'merged';  % how safety locations are dealt with ('merged'
 dyn                  = [];
 dyn.on               = true;    % enables you to produce a score (escape or death)
 dyn.timeLimit        = 60;      % how long the agent has to escape
-dyn.predatorSpeed    = 11;      % how fast the predator can move (in moves per second)
-dyn.agentSpeed       = 9;       % how fast the agent can move (in moves per second)
+dyn.predatorSpeed    = 1.5;      % how fast the predator can move (in moves per second)
+dyn.agentSpeed       = 1;       % how fast the agent can move (in moves per second)
 dyn.predatorFunction = 'astar'; % 'astar' or 'softmax'
 dyn.frameRate        = 60;      % update rate of movement
 dyn.lookahead        = true;    % does the agent imagine deaths along future policies, given predator speed?
@@ -46,9 +48,11 @@ MDP = [];
 MDP.nStates     = numel(gridworld);
 MDP.dim         = size(gridworld);
 MDP.map         = reshape(1:MDP.nStates,MDP.dim(1),MDP.dim(2))';
+MDP.reward      = reward;
 MDP.safety      = safety;
+MDP.cone        = cone;
 
-MDP = u_maze(MDP,'interactive'); % 'auto' or 'interactive'
+MDP = u_maze(MDP,dyn);
 
 MDP.reward          = [MDP.reward, repmat(10,length(MDP.reward),1)];       % set value of terminal reward state
 MDP.punishment(2)   = -10;              % set value of terminal predator state
@@ -62,7 +66,6 @@ MDP.beta        = beta;
 MDP.w           = w;
 MDP.tol         = tol;
 MDP.max_iter    = max_iter;
-MDP.cone        = cone;
 
 MDP = mdp_build(MDP);
 
