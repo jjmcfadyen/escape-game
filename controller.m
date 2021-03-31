@@ -20,6 +20,7 @@ switch job
                 Y.predator  = X.punishment;
                 Y.hiding    = false;
                 Y.moving    = [];
+                Y.cone      = Y.agent_cone;
                 
                 % Remove fields
                 if isfield(Y,'V')
@@ -36,6 +37,8 @@ switch job
                 Y.agent     = [X.start X.reward(2)];
                 Y.plan      = [];
                 Y.moving    = [];
+                Y.cone      = Y.predator_cone;
+                Y.terminal  = [];
                 
                 % Remove fields
                 remove_fields = {'punishment','reward','V','plan'};
@@ -73,11 +76,21 @@ switch job
                     X               = rmfield(X,'punishment');
                 end
                 
+                % If multiple rewards, focus on the first one
+                if size(X.reward,1) > 1
+                    X.reward = X.reward(1,:);
+                end
+                
                 % Update entire value map (but only if different from before)
                 X = mdp_build(X);
                 
-                if u_valdiff(X,MDP)
+                if ~isfield(X,'V') || u_valdiff(X,MDP)
                     X = mdp_valueIteration(X,false);
+                else
+                    pos = u_coordswitch(round(X.position),X); 
+                    if pos ~= X.plan(1) % update position in plan
+                        X.plan = X.plan(find(X.plan==pos):end);
+                    end
                 end
                 
                 % Check if hiding
@@ -85,27 +98,41 @@ switch job
                     if length(X.plan) > 2
                         nextmove = X.plan(2);
                     else
-                        nextmove = X.plan(1);
+                        try
+                            nextmove = X.plan(1);
+                        catch
+                            X = mdp_valueIteration(X,false);
+                            nextmove = X.plan(1);
+                        end
                     end
-                    if X.start == nextmove && any(X.start == X.loc_safe)
+                    if X.start == nextmove && any(X.start == X.safety.loc_safe)
                         X.hiding = true;
                     end
                 end
 
             case 'predator'
 
-                % Check if agent is hiding or not
-                if ~X.agent_hiding % no
+                % Check what can currently be seen
+                if X.cone ~= Inf
+                    [~,labels]  = u_viscone(X.start,X);
+                    X.cansee    = labels;
+                else
+                    X.cansee    = 1:X.nStates;
+                end
+                
+                % Can the agent be seen?
+                if any(X.cansee == X.agent(1)) &&  ~X.agent_hiding % yes
                     
                     % Compute path to agent
                     X.plan = mdp_astar(X.start,X.agent(1),X);
                     
-                else % yes
+                else
                     
-                    % Make their safe location unavailable
                     tmp = X;
-                    tmp.map(tmp.map==X.agent(1)) = NaN;
-                    tmp = mdp_build(tmp);
+                    if X.agent_hiding % Make their safe location unavailable
+                        tmp.map(tmp.map==X.agent(1)) = NaN;
+                        tmp = mdp_build(tmp);
+                    end
                     
                     % Compute path to random location   
                     loc_rand = tmp.viableStates(randi(tmp.nViable));

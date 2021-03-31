@@ -4,7 +4,7 @@ function MDP = u_maze(MDP,dyn)
 
 % Obstacles
 nSolutions = 2; % number of possible routes from start to finish
-odensity   = .9; % 1 = keep all obstacles, 0 = remove all obstaces, 0-1 remove portion of obstacles
+odensity   = .8; % 1 = keep all obstacles, 0 = remove all obstaces, 0-1 remove portion of obstacles
 
 % Predator spawn point
 depth   = 3; % how many moves away (max) from the shortest path to generate the predator (Inf = pick any state in the map)
@@ -278,7 +278,7 @@ end
 opt_states = viable(nOptions > 1);
 
 % randomise the reward & safety locations until you get a nice range of scenarios
-while true
+% while true
    
     % if there's a switch button (i.e. a second reward), put it somwhere in
     % the middle band of the map
@@ -318,31 +318,32 @@ while true
         end
     end
     
-    % go through potential scenarios
-    for st = 1:length(opt_states) % for each player position with more than 1 option...
-        this_state = opt_states(st);
-        for r = 1:length(loc_rew) % for each potential goal...
-             
-            this_rew = loc_rew(r);
-            choices = setdiff(find(MDP.T(this_state,:)==1),this_state);
-            
-            % which choice would be the shortest path to the goal?
-            [shortest_path,multi] = mdp_astar(this_state,this_rew,MDP);
-            
-            if multi
-                error('need to write something so that multiple shortest paths are accounted for')
-            end
-                
-            reward_choice = find(ismember(choices,shortest_path));
-            
-            % given visible predator, what is the correct choice? (tree search)
-            
-            % given unseent (but present) predator, what is the correct choice?
-            
-        end
-    end
+%     % go through potential scenarios
+%     for st = 1:length(opt_states) % for each player position with more than 1 option...
+%         this_state = opt_states(st);
+%         for r = 1:length(loc_rew) % for each potential goal...
+%              
+%             this_rew = loc_rew(r);
+%             choices = setdiff(find(MDP.T(this_state,:)==1),this_state);
+%             
+%             % which choice would be the shortest path to the goal?
+%             [shortest_path,multi] = mdp_astar(this_state,this_rew,MDP);
+%             
+%             if multi
+%                 error('multiple shortest paths - pick new reward location?')                
+%             end
+%                 
+%             reward_choice = find(ismember(choices,shortest_path));
+%             
+%             % given visible predator, what is the correct choice? (tree search)
+%             
+%             
+%             % given unseent (but present) predator, what is the correct choice?
+%             
+%         end
+%     end
     
-end
+% end
 
 % % in states with more than one option, what could you do in different scenarios?
 % opt_states = viable(nOptions > 1);
@@ -381,14 +382,12 @@ MDP.safety.loc_safe = loc_safe;
 
 %% Assign predator to random location near shortest path
 
-if isfield(MDP,'reward') || isfield(MDP,'punishment')
-    terminal = MDP.reward(1); 
-else
-    terminal = MDP.terminal; 
-end
+% Update reward
+MDP.reward = [loc_rew' repmat(MDP.reward.val,MDP.reward.num,1)];
+MDP.terminal = MDP.reward(end,1); % last reward is the exit
 
 % get shortest path using A* algorithm
-sp = mdp_astar(MDP.start,terminal,MDP);
+sp = mdp_astar(MDP.start,MDP.terminal,MDP);
 sp = [MDP.start; sp];
 
 % for p = 1:length(sp)-1

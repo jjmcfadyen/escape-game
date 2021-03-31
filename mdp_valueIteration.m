@@ -67,11 +67,16 @@ Q(~isnan(Q)) = 0;
 
 % Convert to matrices
 sprime = cell2mat(MDP.info.sprime); % which state can be transitioned to
+idx = sum(isnan(sprime),2) < size(sprime,2) == 1; % let non-nan states transition to themselves
+sprime(idx,end) = find(idx);
+
 T      = cell2mat(MDP.info.T);      % the probability of each sprime
 R      = cell2mat(MDP.info.R);      % the reward at each sprime
 
 % Run iterations
-figure
+if makeplots
+    figure
+end
 for i = 1:max_iter
     
     % Copy Q
@@ -118,9 +123,11 @@ for i = 1:max_iter
     MDP.V = V(1:end-1);
     
     % Draw progress
-    clf
-    draw_map(MDP)
-    drawnow
+    if makeplots
+        clf
+        draw_map(MDP)
+        drawnow
+    end
     
 end
 
@@ -135,7 +142,16 @@ MDP.Q = Q;
 %% Solve for V
 
 % get best sprime per state (according to max Q value)
-[~,max_idx] = nanmax(Q,[],2);
+max_idx = ones(size(Q,1),1)*5; % default to last action (transition to self)
+for i = 1:size(Q,1)
+    if any(~isnan(Q(i,:)))
+        this_max = max(Q(i,:));
+        if sum(Q(i,:)==this_max) == 1
+            max_idx(i,1) = find(Q(i,:) == this_max);
+        end
+    end
+end
+% [~,max_idx] = nanmax(Q,[],2);
 
 qpolicy = nan(MDP.nStates,1);
 for st = 1:MDP.nStates

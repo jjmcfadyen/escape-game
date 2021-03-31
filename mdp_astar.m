@@ -41,8 +41,8 @@ parents = nan(size(map,1),size(map,2));
 % iteratively open up the map
 position = aidx;
 closed = nan(0,2);
-% figure
 randomness = false;
+alternatives = []; % position, options left
 while true
     
     % open up the surrounding states
@@ -93,7 +93,7 @@ while true
     
     parents(idx) = u_coordswitch(position,MDP);
     
-%     % plot   
+%{     
     pmap = fcost;
     pmap(pmap==Inf) = 0;
 
@@ -107,7 +107,7 @@ while true
     for c = 1:size(closed,1)
         scatter(closed(c,2),closed(c,1),100,'x','r'); hold on
     end
-%     
+%}
     if ismember(position,bidx,'rows')
         
         % trace back the optimal path
@@ -138,9 +138,14 @@ while true
     elseif size(min_h,1) == 1
         cnode = min_h;
     else
-        cnode = min_f(randi(size(min_f,1)),:);
+        rand_choice = randi(size(min_f,1));
+        cnode = min_f(rand_choice,:);
         warning('There might be two shortest paths')
         randomness = true;
+        unchosen = setdiff(1:size(min_f,1),rand_choice);
+        choices_left = nan(1,4);
+        choices_left(1:length(unchosen)) = unchosen;
+        alternatives = [alternatives; position choices_left];
     end
     
     % close it
@@ -159,5 +164,7 @@ while true
     
 end
 
+% Try again with alternatives
+disp('')
 
 end

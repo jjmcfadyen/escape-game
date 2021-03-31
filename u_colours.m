@@ -12,6 +12,18 @@ catch
 end
 
 switch cName
+    case 'redblue'
+        grad_colours = [
+            236, 0, 0 
+            36, 186, 252 
+            0, 236, 172 
+                        ] / 255;
+        cm = [];
+        for g = 1:length(grad_colours)-1
+            cm = [cm; linspace(grad_colours(g,1),grad_colours(g+1,1),10)',...
+                      linspace(grad_colours(g,2),grad_colours(g+1,2),10)',...
+                      linspace(grad_colours(g,3),grad_colours(g+1,3),10)'];
+        end
     case 'viridis'
         cm = [[ 0.26700401,  0.00487433,  0.32941519],
        [ 0.26851048,  0.00960483,  0.33542652],

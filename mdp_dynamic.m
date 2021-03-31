@@ -40,6 +40,7 @@ while f <= frames
     end
     
     % evaluate agent's environment
+    agent.reward = MDP.reward;
     agent = controller(agent,'agent','evaluate');
     if agent.hiding
         predator.plan = predator.plan(find(predator.plan==predator.start):end,:);
@@ -54,7 +55,7 @@ while f <= frames
     if isempty(agent.moving) % if the agent has no trajectory...
         agent = controller(agent,'agent','setmovement');
     end
-    if isempty(predator.moving) % if the agent has no trajectory...
+    if isempty(predator.moving)% if the agent has no trajectory...
         predator = controller(predator,'predator','setmovement');
     end
     
@@ -91,6 +92,13 @@ while f <= frames
         title('moving')
     end
     drawnow
+    
+    % save as gif
+    if f == 1
+        u_gif('dynamic.gif','delaytime',1/6);
+    else
+        u_gif;
+    end
 
 end
 

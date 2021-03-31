@@ -53,13 +53,43 @@ end
 %     plot([0.5 MDP.dim(2)+0.5],[r r],'k','linewidth',.5); hold on
 % end
 
-% Put border around terminal states
-for t = 1:length(MDP.terminal)
-    [row,col] = find(MDP.map == MDP.terminal(t));
-    plot(repmat(col-.5,2,1),[row-.5 row+.5],'w','linewidth',3);
-    plot(repmat(col+.5,2,1),[row-.5 row+.5],'w','linewidth',3);
-    plot([col-.5 col+.5],repmat(row-.5,2,1),'w','linewidth',3);
-    plot([col-.5 col+.5],repmat(row+.5,2,1),'w','linewidth',3);
+% % Put white border around reward
+% for t = 1:size(MDP.reward,1)
+%     [row,col] = find(MDP.map == MDP.reward(t,1));
+%     plot(repmat(col-.5,2,1),[row-.5 row+.5],'w','linewidth',3);
+%     plot(repmat(col+.5,2,1),[row-.5 row+.5],'w','linewidth',3);
+%     plot([col-.5 col+.5],repmat(row-.5,2,1),'w','linewidth',3);
+%     plot([col-.5 col+.5],repmat(row+.5,2,1),'w','linewidth',3);
+% end
+
+% Put white border around visible states
+for h = 1:length(MDP.cansee)
+    [row,col] = find(MDP.map == MDP.cansee(h));
+    plot(repmat(col-.5,2,1),[row-.5 row+.5],'w','linewidth',1.2);
+    plot(repmat(col+.5,2,1),[row-.5 row+.5],'w','linewidth',1.2);
+    plot([col-.5 col+.5],repmat(row-.5,2,1),'w','linewidth',1.2);
+    plot([col-.5 col+.5],repmat(row+.5,2,1),'w','linewidth',1.2);
+end
+
+% Put blue border around safe locations
+colour = [0 236 189]/255;
+for h = 1:length(MDP.safety.loc_safe)
+    [row,col] = find(MDP.map == MDP.safety.loc_safe(h));
+    plot(repmat(col-.5,2,1),[row-.5 row+.5],'color',colour,'linewidth',2.5);
+    plot(repmat(col+.5,2,1),[row-.5 row+.5],'color',colour,'linewidth',2.5);
+    plot([col-.5 col+.5],repmat(row-.5,2,1),'color',colour,'linewidth',2.5);
+    plot([col-.5 col+.5],repmat(row+.5,2,1),'color',colour,'linewidth',2.5);
+end
+
+% Put red border around (visible) predator
+if isfield(MDP,'predator')
+    if any(ismember(MDP.cansee,MDP.predator(1)))
+        [row,col] = find(MDP.map == MDP.predator(1));
+        plot(repmat(col-.5,2,1),[row-.5 row+.5],'r','linewidth',2.5);
+        plot(repmat(col+.5,2,1),[row-.5 row+.5],'r','linewidth',2.5);
+        plot([col-.5 col+.5],repmat(row-.5,2,1),'r','linewidth',2.5);
+        plot([col-.5 col+.5],repmat(row+.5,2,1),'r','linewidth',2.5);
+    end
 end
 
 % Show policy
@@ -85,6 +115,6 @@ if MDP.safety.on
 end
 
 % Tidy
-set(gca,'ticklength',[0 0])
+set(gca,'visible','off')
 
 end
